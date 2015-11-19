@@ -1,0 +1,34 @@
+elasticsearch:
+  image: elasticsearch:2.0
+  restart: always
+  command: elasticsearch -Des.network.host=0.0.0.0
+
+logstash:
+  image: logstash:2.0
+  restart: always
+  command: logstash -f /etc/logstash/logstash.conf
+  ports:
+    - "12201:12201/udp"
+    - "10514:10514/udp"
+  volumes:
+    - "./logstash.conf:/etc/logstash/logstash.conf"
+    - "./poirot-template.json:/etc/poirot/poirot-template.json"
+  links:
+    - elasticsearch
+
+kibana:
+  image: kibana:4.2
+  restart: always
+  links:
+    - elasticsearch
+  ports:
+    - "5601:5601"
+
+
+poirot_receiver:
+  image: instedd/poirot-receiver
+  restart: always
+  ports:
+    - "2120:2120"
+  links:
+    - elasticsearch
